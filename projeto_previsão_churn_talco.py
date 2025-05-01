@@ -16,9 +16,14 @@ from feature_engineering import apply_custom_features
 from sklearn.metrics import make_scorer, accuracy_score, precision_score, recall_score, f1_score
 
 from plotagem import plot_histogram, plot_stacked_bar, plot_confusion_matrix, plot_roc_curve
+import os
 
-# File Path
-file_path = r'C:\Users\Luiz Gustavo\Desktop\Projeto Previsão de Churn\WA_Fn-UseC_-Telco-Customer-Churn.csv'
+#FIle path
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(current_dir, "WA_Fn-UseC_-Telco-Customer-Churn.csv")
+
+df = pd.read_csv(file_path)
 
 # ==============================================
 # DATA LOADING AND CLEANING (ORIGINAL)
