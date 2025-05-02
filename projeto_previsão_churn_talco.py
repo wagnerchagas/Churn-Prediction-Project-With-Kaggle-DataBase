@@ -352,10 +352,11 @@ st.set_page_config(layout="wide", page_title="Churn Dashboard")
 @st.cache_data
 def load_data():
     """Carrega e processa os dados reais"""
-    file_path = r'C:\Users\Luiz Gustavo\Desktop\Projeto Previsão de Churn\WA_Fn-UseC_-Telco-Customer-Churn.csv'
-    
-    # Data
-    df = pd.read_csv(file_path)
+    try:
+        df = pd.read_csv("WA_Fn-UseC_-Telco-Customer-Churn.csv")
+    except FileNotFoundError:
+        st.error("Arquivo CSV não encontrado! Verifique o repositório.")
+        return pd.DataFrame()
     df.drop('customerID', axis=1, inplace=True)
     
     # Data processing
