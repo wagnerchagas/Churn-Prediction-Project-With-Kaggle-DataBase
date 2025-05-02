@@ -34,7 +34,7 @@ Prever churn de clientes com alta sensibilidade (recall) e precisão suficiente 
 
 ---
 
-## 2. 🔍 Entendimento e Iniciação
+### 2. 🔍 Entendimento e Iniciação
 
 ### 2.1 Escolha do Dataset
 - **Fonte**: [Telco Customer Churn (Kaggle)](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)  
@@ -48,7 +48,20 @@ Prever churn de clientes com alta sensibilidade (recall) e precisão suficiente 
 ### 2.2 Perguntas de Negócio
 - Quais atributos realmente influenciam a decisão de churn?  
 - Como limpar inconsistências (e.g., `TotalCharges` como texto, espaços vazios)?  
-- Em um dataset desbalanceado (~27% churn), como priorizar a detecção de churners sem gerar alarmes falsos em excesso?  
+- Em um dataset desbalanceado (~27% churn), como priorizar a detecção de churners sem gerar alarmes falsos em excesso?
+
+### 2.3 Respostas às Perguntas de Negócio
+1. **Atributos que influenciam o churn**  
+   – Vou extrair `feature_importances_` do Random Forest e mostrar um gráfico ou tabela com os 10 mais importantes (e.g. `PaymentMethod_Electronic check`, `Contract_Month-to-month`, etc.).
+2. **Limpeza de inconsistências**  
+   – Convertemos `TotalCharges` de string para numérico com `pd.to_numeric(..., errors='coerce')` + `fillna(0)`.  
+   – Imputação de valores faltantes em categóricas (`'Unknown'`) e numéricas (mediana).  
+   – Remoção de identificadores e checagem de duplicatas.
+3. **Tratamento do desbalanceamento**  
+   – Usamos SMOTETomek para gerar churners sintéticos e remover exemplos ambíguos.  
+   – Otimizamos o threshold via F₂‑Score (β=2) para maximizar o recall sem explodir os falsos positivos.
+
+---
 
 ---
 
@@ -88,8 +101,8 @@ Prever churn de clientes com alta sensibilidade (recall) e precisão suficiente 
    print(df.dtypes)             # → tipos adequados
 Insight: dados bem limpos evitam vazamentos e erros de conversão no pipeline.
 
-## 4. 📊 Engenharia de Features
-4.1 Features Base
+### 4. 📊 Engenharia de Features
+### 4.1 Features Base
 
 Feature	Como Criada e 	Porquê
 tenure_group	pd.cut(df.tenure, bins=[0,6,12,24,60,72], labels=[…])	Captura padrões não lineares de risco em diferentes durações de contrato
@@ -97,7 +110,7 @@ avg_charge_per_tenure	df['TotalCharges'] / df['tenure'].replace(0,1)	Normaliza o
 high_value_flag	(MonthlyCharges > Q3) & (tenure > median)	Detecta clientes de alto valor propensos a churn precoce
 service_density	Soma de respostas “Yes” em colunas de serviços extras (OnlineSecurity, TechSupport, etc.)	Clientes com poucos serviços extras apresentaram churn mais rápido
 
-4.2 Features Derivadas da Análise de Erro
+### 4.2 Features Derivadas da Análise de Erro
 Durante os testes iniciais (v2), observamos discrepâncias em Falsos Negativos (FNs) e Falsos Positivos (FPs):
 
 python
@@ -113,15 +126,15 @@ Padrão Detectado	Observação
 FN (churn não previsto)	Altas cobranças iniciais, tenure baixo, contrato mensal
 FP (alarme falso)	Pagamento automático, contratos anuais, múltiplos serviços ativos
 
-Novas Features Criadas
+## Novas Features Criadas
 
-Feature	Como Criada	Porquê
+## Feature	Como Criada	Porquê
 MonthlyCharges_log	np.log1p(df['MonthlyCharges'])	Reduz skew e enfatiza variações relativas em cobranças altas
 SeniorContractCombo	(df.SeniorCitizen==1).astype(int) * df.Contract.map({'Month-to-month':1, ...})	Captura risco elevado em clientes sêniores com contratos menos estáveis
 SupportServicesCount	Soma de respostas “Yes” em serviços de suporte	Clientes sem suporte extra têm +35% de chance de churn
 
 ## 5. ⚙️ Pipeline de Machine Learning
-5.1 Separação de Variáveis
+## 5.1 Separação de Variáveis
 python
 
 X = df.drop('Churn', axis=1)
@@ -144,7 +157,7 @@ python
     ('encoder', OneHotEncoder(handle_unknown='ignore'))
 ]), categorical_features)
 
-5.3 Balanceamento de Classes com SMOTETomek
+## 5.3 Balanceamento de Classes com SMOTETomek
 python
 
 from imblearn.combine import SMOTETomek
@@ -158,14 +171,14 @@ Remove pontos ambíguos (Tomek Links)
 
 Melhora a separabilidade e reduz overfitting
 
-5.4 Classificador Random Forest
+## 5.4 Classificador Random Forest
 python
 
 ('classifier', RandomForestClassifier(
     class_weight='balanced',
     random_state=42
 ))
-5.5 Encadeamento em Pipeline
+## 5.5 Encadeamento em Pipeline
 python
 
 pipeline = Pipeline([
@@ -181,12 +194,12 @@ Benefício: encapsula todo o fluxo, evitando vazamento de dados e garantindo rep
 KPI principal: capturar churners (recall) sem gerar custos altos com falsos positivos.
 Métrica escolhida: F2-Score (β=2), que penaliza mais fortemente os falsos negativos.
 
-6.2 Configuração do Scorer
+## 6.2 Configuração do Scorer
 python
 from sklearn.metrics import make_scorer, fbeta_score
 f2_scorer = make_scorer(fbeta_score, beta=2)
 
-6.3 RandomizedSearchCV
+## 6.3 RandomizedSearchCV
 python
 
 search = RandomizedSearchCV(
@@ -198,7 +211,7 @@ best_model = search.best_estimator_
 Resultado: recall > 90% na classe churn e precisão consistentemente melhorada.
 
 ## 7. 🎛️ Threshold Dinâmico & Classificação de Risco
-7.1 Cálculo do Threshold Ótimo
+## 7.1 Cálculo do Threshold Ótimo
 python
 
 from sklearn.metrics import precision_recall_curve
@@ -207,7 +220,7 @@ prec, rec, thr = precision_recall_curve(y_test, y_probs)
 f2_scores = (1 + 2**2) * (prec * rec) / (4 * prec + rec)
 optimal_threshold = thr[np.nanargmax(f2_scores)]
 
-7.2 Classificação de Risco
+## 7.2 Classificação de Risco
 python
 
 def classify_risk(score):
@@ -236,7 +249,7 @@ df_result['Cost'] = np.select(
     default=0
 )
 
-7.4 Exportação Final
+## 7.4 Exportação Final
 python
 
 df_result.to_csv('clientes_classificados.csv', index=False, sep=';')
@@ -252,7 +265,7 @@ Quando isso faz sentido?
 
 ❌ Se há pouca capacidade operacional para lidar com falsos positivos ou campanhas caras.
 
-7.6 Impacto de Falsos Positivos e Negativos no Negócio
+## 7.6 Impacto de Falsos Positivos e Negativos no Negócio
 FPs: custo irrelevante (e-mails automáticos → quase zero); só gera custo se o cliente responder.
 
 FNs: apenas 24 (< 7% dos churners) → excelente para evitar perdas sem alerta.
@@ -311,7 +324,7 @@ Objetivo:
 Reduzir o churn em 25% nos próximos 3 meses através de intervenções direcionadas.
 
 ------------------------------------------------------------
-10.1 Triagem de Clientes Prioritários
+## 10.1 Triagem de Clientes Prioritários
 
 Segmento      | Critério                    | Nº de Clientes | Ação
 --------------|-----------------------------|----------------|----------------------------
@@ -320,7 +333,7 @@ Alto Risco    | 60% ≤ Prob. Churn < 80%     | 300            | Campanhas perso
 Monitorar     | 45% ≤ Prob. Churn < 60%     | 500            | Engajamento preventivo
 
 ------------------------------------------------------------
-10.2 Kit de Ações para Cada Segmento
+## 10.2 Kit de Ações para Cada Segmento
 
 🔴 Crítico (Prob. ≥ 80%)
 - Contato humano em até 24h (call center especializado)
@@ -339,7 +352,7 @@ Monitorar     | 45% ≤ Prob. Churn < 60%     | 500            | Engajamento pre
 > Métrica-chave: ≥ 25% de taxa de resposta
 
 ------------------------------------------------------------
-10.3 Cálculo de Custo-Benefício
+## 10.3 Cálculo de Custo-Benefício
 
 Item                | Custo Unitário | Retenção Estimada
 --------------------|----------------|-------------------
@@ -354,7 +367,7 @@ receita_preservada = (120*0.7 + 300*0.4 + 500*0.15) * 2500 = R$ 1.162.500
 ROI = (1.162.500 - 24.000) / 24.000 ≈ 4743%
 
 ------------------------------------------------------------
-10.4 Fluxo de Governança
+## 10.4 Fluxo de Governança
 
 - Diário: Atualizar lista de clientes críticos às 8h
 - Semanal: Reunião de análise de conversões com a equipe de CX
@@ -363,7 +376,7 @@ ROI = (1.162.500 - 24.000) / 24.000 ≈ 4743%
   - Testar novas mensagens/ofertas com A/B testing
 
 ------------------------------------------------------------
-10.5 Alertas Proativos (Exemplo)
+## 10.5 Alertas Proativos (Exemplo)
 
 if prob_churn >= 0.8 and contract == "Monthly" and support_tickets >= 3:
     enviar_para_fila("URGENTE", cliente_id)
@@ -378,7 +391,7 @@ Resultado Esperado:
 - Aumento de 15% no NPS devido a ações personalizadas
 
 
-10.6📌 Conclusão e Próximos Passos
+## 10.6📌 Conclusão e Próximos Passos
 O modelo atinge alto recall com custo operacional baixo, graças ao uso de e-mails e mensagens automatizadas.
 
 FNs são mantidos abaixo de 7%;
