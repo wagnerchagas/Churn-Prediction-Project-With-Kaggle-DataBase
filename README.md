@@ -1,7 +1,7 @@
 # 🧠 Projeto de Previsão de Churn em Telecomunicações- telco-costumer-churn Kaggle
 
 ## LINK PARA VIZUALIZAÇÃO, DASHBOARD FEITO COM STREAMLIT:https://churn-prediction-project-with-kaggle-database-g5q9uswffyie7tzb.streamlit.app/
-## IMAGENS ESTÃO CONTIDAS NA PASTA "prints do funcionamento", onde estão diversos prints das funcionalidades do código, em estágio inicial e final
+## IMAGENS ESTÃO CONTIDAS NA PASTA "prints do funcionamento", onde estão diversos prints das funcionalidades do código, em estágio inicial e final.
 
 ## 📉 Introdução
 Este projeto tem como objetivo prever o churn de clientes de uma operadora de telecomunicações, utilizando o conjunto de dados Telco Customer Churn.
