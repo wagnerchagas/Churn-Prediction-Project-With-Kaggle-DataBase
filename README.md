@@ -113,6 +113,24 @@ service_density	Soma de respostas “Yes” em colunas de serviços extras (Onli
 ### 4.2 Features Derivadas da Análise de Erro
 Durante os testes iniciais (v2), observamos discrepâncias em Falsos Negativos (FNs) e Falsos Positivos (FPs):
 
+### 4.3 Importância dos Atributos
+
+A seguir, o top‑10 de features ordenadas pelo `feature_importances_` do Random Forest:
+
+| Atributo                        | Importância (%) |
+|---------------------------------|-----------------|
+| Contract_Month-to-month         | 17.43%          |
+| Contract_Two year               | 10.44%          |
+| OnlineSecurity_No               | 10.11%          |
+| TechSupport_No                  |  8.34%          |
+| PaymentMethod_Electronic check  |  6.01%          |
+| tenure                          |  5.63%          |
+| InternetService_Fiber optic     |  3.79%          |
+| tenure_group_0-6                |  3.45%          |
+| TotalCharges                    |  3.12%          |
+| MonthlyCharges                  |  2.74%          |
+
+
 python
 
 # False Negatives
