@@ -21,15 +21,18 @@ import os
 #FIle path
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(current_dir, "WA_Fn-UseC_-Telco-Customer-Churn.csv")
 
-df = pd.read_csv(file_path)
+
+# em vez de usar os.path e __file__, só:
+
+df = pd.read_csv("WA_Fn-UseC_-Telco-Customer-Churn.csv")
+
 
 # ==============================================
 # DATA LOADING AND CLEANING (ORIGINAL)
 # ==============================================
 
-df = pd.read_csv(file_path)
+
 df.drop('customerID', axis=1, inplace=True)
 
 def convert_total_charges(series):
@@ -227,11 +230,11 @@ def print_metrics(y_true, y_pred, y_probs):
     f1 = f1_score(y_true, y_pred)
     auc = roc_auc_score(y_true, y_probs)
     
-    # Matriz de confusão
+    # Confusion Matrix
     cm = confusion_matrix(y_true, y_pred)
     tn, fp, fn, tp = cm.ravel()
     
-    # Formatação
+    # Format
     print("\n" + "="*40)
     print("=== Métricas de Desempenho ===")
     print("="*40)
@@ -351,11 +354,11 @@ def load_data():
     """Carrega e processa os dados reais"""
     file_path = r'C:\Users\Luiz Gustavo\Desktop\Projeto Previsão de Churn\WA_Fn-UseC_-Telco-Customer-Churn.csv'
     
-    # Carrega os dados
+    # Data
     df = pd.read_csv(file_path)
     df.drop('customerID', axis=1, inplace=True)
     
-    # Processamento dos dados (igual ao que você já tem)
+    # Data processing
     df['TotalCharges'] = pd.to_numeric(
         df['TotalCharges'].astype(str).str.strip().replace('', np.nan),
         errors='coerce'
@@ -371,14 +374,14 @@ def load_data():
     
     df.drop_duplicates(inplace=True)
     
-    # Aplica feature engineering
+    # Apply feature engineering
     df = apply_custom_features(df)
     
     # Converte Churn para numérico
     df['Churn'] = df['Churn'].map({'Yes': 1, 'No': 0})
     
     return df
-# Carrega os dados REAIS
+# Load real data
 df = load_data()
 
 # --- Sidebar ---
@@ -390,7 +393,7 @@ with st.sidebar:
         default=df['Contract'].unique()
     )
 
-# Aplica filtros
+# Apply filter
 filtered_df = df[df['Contract'].isin(contract_filter)]
 
 # --- Section 1: Charts ---
@@ -405,11 +408,11 @@ with col1:
 with col2:
     st.subheader("Churn by Contract Type")
     
-    # Verificação dos dados
+    # Verify the Data
     st.write("Distribuição real:", 
              filtered_df.groupby('Contract')['Churn'].mean().round(2))
     
-    # Geração do gráfico
+    # Generates the Graphics
     fig2 = plot_stacked_bar(filtered_df, 'Contract', 'Churn', 'Churn by Contract Type')
     if fig2:
         fig2.update_layout(
@@ -424,7 +427,7 @@ with col2:
         )
         st.plotly_chart(fig2, use_container_width=True)
     
-# --- NOVA SEÇÃO DE INSIGHTS ---
+# --- INSIGHTS ---
 st.header("🔍 Análise de Insights")
 
 col_insight1, col_insight2 = st.columns(2)
@@ -443,7 +446,7 @@ with col_insight2:
     """)
 
 # --- Section 2: Model Validation ---
-# [Seu conteúdo atual de validação...]
+# [Valdiation...]
 
 # --- Section 2: Model Validation ---
 st.header("Model Validation")
